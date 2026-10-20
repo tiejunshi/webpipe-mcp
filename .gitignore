@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 密钥与本地凭证（严禁提交）
+.env
+.env.*
+*.key
+*.pem
