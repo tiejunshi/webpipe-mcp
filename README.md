@@ -20,7 +20,7 @@ pip install -r webpipe-mcp/requirements.txt
 
 ## 配置 API Key
 
-在 https://webpipe.ai/dashboard/api-keys 获取 Key，通过环境变量设置：
+在 https://webpipe.ai/api-keys.html 获取 Key，通过环境变量设置：
 
 ```bash
 # Windows PowerShell

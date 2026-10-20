@@ -57,7 +57,7 @@ def _get_client(api_key: Optional[str] = None, base_url: Optional[str] = None) -
     if not key:
         raise ValueError(
             f"缺少 API Key。请设置环境变量 {_API_KEY_ENV} 或在调用时传入 api_key 参数。\n"
-            f"去 WebPipe 控制台获取 Key：https://webpipe.ai/dashboard/api-keys"
+            f"去 WebPipe 控制台获取 Key：https://webpipe.ai/api-keys.html"
         )
     url = base_url or os.environ.get(_BASE_URL_ENV)  # SDK 默认 https://api.web2json.ai
     kwargs: dict[str, Any] = {"api_key": key}
