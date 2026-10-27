@@ -1,0 +1,2 @@
+webpipe-sdk>=0.1.2
+fastmcp>=4.0
