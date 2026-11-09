@@ -21,62 +21,6 @@ The key resolves in this order (highest first):
 1. The explicit `api_key` argument passed to a tool call.
 2. The `WEBPIPE_API_KEY` environment variable.
 
-## Remote MCP Server
-
-Connect directly to the hosted MCP server instead of running it locally:
-
-```text
-https://mcp.webpipe.ai
-```
-
-If your client supports remote HTTP (streamable HTTP) MCP servers, pass the key as an `Authorization` header:
-
-```text
-Authorization: Bearer <your-api-key>
-```
-
-### Connect to Claude Code (remote)
-
-```bash
-claude mcp add --transport http webpipe https://mcp.webpipe.ai \
-  --header "Authorization: Bearer $WEBPIPE_API_KEY"
-```
-
-### Connect to Codex (remote)
-
-```bash
-codex mcp add webpipe --url https://mcp.webpipe.ai \
-  --bearer-token-env-var WEBPIPE_API_KEY
-```
-
-### JSON-configured clients
-
-The template below follows **Claude Code's `.mcp.json` format**. Other agents use the same shape but different file locations:
-
-```json
-{
-  "mcpServers": {
-    "webpipe": {
-      "type": "http",
-      "url": "https://mcp.webpipe.ai",
-      "headers": { "Authorization": "Bearer ${WEBPIPE_API_KEY}" }
-    }
-  }
-}
-```
-
-| Agent | Config file |
-| --- | --- |
-| Claude Code | `.mcp.json` (project) or `~/.claude.json` |
-| Cursor | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project) |
-| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
-| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` (Windows) / `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) |
-| Cline | "MCP Servers" panel in the Cline UI |
-| VS Code (Copilot) | `.vscode/mcp.json` — note the top-level key is `"servers"`, not `"mcpServers"` |
-| Gemini CLI | `~/.gemini/settings.json` |
-
-Clients that support environment-variable expansion (for example Claude Code) substitute `${WEBPIPE_API_KEY}` automatically. For other clients, put the literal key in place of `${WEBPIPE_API_KEY}`.
-
 ## Local MCP
 
 ### Prerequisites
@@ -96,17 +40,11 @@ This installs two dependencies: `webpipe-sdk>=0.1.2` and `fastmcp>=4.0`.
 
 ### Running
 
-**stdio mode** (default for local MCP clients):
+**stdio mode** (the only supported mode; local MCP clients launch it via command + args):
 
 ```bash
 export WEBPIPE_API_KEY=your-webpipe-api-key   # Windows: set WEBPIPE_API_KEY=...
 python server.py
-```
-
-**HTTP Streamable mode** (self-host a remote endpoint):
-
-```bash
-fastmcp run server.py:mcp --transport streamable-http --host 0.0.0.0 --port 8080
 ```
 
 ### Connect to Claude Code (local)
@@ -131,6 +69,18 @@ The template below follows **Claude Desktop's config file format** (`mcpServers`
   }
 }
 ```
+
+Other agents use the same shape but different file locations:
+
+| Agent | Config file |
+| --- | --- |
+| Claude Code | `.mcp.json` (project) or `~/.claude.json` |
+| Cursor | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project) |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
+| Claude Desktop | `%APPDATA%\Claude\claude_desktop_config.json` (Windows) / `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) |
+| Cline | "MCP Servers" panel in the Cline UI |
+| VS Code (Copilot) | `.vscode/mcp.json` — note the top-level key is `"servers"`, not `"mcpServers"` |
+| Gemini CLI | `~/.gemini/settings.json` |
 
 ### Verify
 

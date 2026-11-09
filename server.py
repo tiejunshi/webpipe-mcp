@@ -3,11 +3,8 @@ WebPipe MCP Server — exposes the WebPipe API (https://webpipe.ai) as MCP tools
 for AI agents.
 
 Usage:
-  # stdio mode (local development / testing)
+  # stdio mode (local MCP clients connect via command + args)
   python server.py
-
-  # HTTP Streamable mode (deploy for agents to connect)
-  fastmcp run server.py:mcp --transport streamable-http --host 0.0.0.0 --port 8080
 
 Auth:
   Set the WEBPIPE_API_KEY environment variable, or pass api_key per call.
