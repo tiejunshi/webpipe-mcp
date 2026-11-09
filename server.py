@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import os
 import json
-import traceback
 from typing import Any, Optional, Sequence
 
 from fastmcp import FastMCP
@@ -405,6 +404,11 @@ def webpipe_crawl(
     crawl finishes or times out (same behavior as the SDK). Results are kept
     for 24 hours. For large sites, cap `limit` and use include/exclude_paths.
 
+    IMPORTANT — always pass a finite `timeout` (e.g. 120) and a small `limit`
+    for large sites. Without `timeout` the call blocks until the whole crawl
+    finishes, which can be very long; a large `limit` returns all pages in one
+    payload and can overflow the agent's context window.
+
     Args:
         url: Start URL (required).
         limit: Max pages to crawl. Default 100, max 10000.
@@ -503,21 +507,6 @@ def webpipe_crawl(
 # ---------------------------------------------------------------------------
 # MCP tool 4: webpipe_browser
 # ---------------------------------------------------------------------------
-
-# Action types supported by Browser Session + their parameter definitions
-_ACTION_SCHEMA = {
-    "click": {"selector": str, "wait_after": Optional[int]},
-    "fill": {"selector": str, "value": str},
-    "select": {"selector": str, "value": str},
-    "press": {"key": str, "selector": Optional[str], "wait_after": Optional[int]},
-    "scroll": {"direction": Optional[str], "amount": Optional[int]},
-    "wait": {"ms": int},
-    "wait_for": {"selector": str, "timeout": Optional[int]},
-    "hover": {"selector": str},
-    "check": {"selector": str},
-    "screenshot": {"full_page": Optional[bool]},
-    "evaluate": {"script": str},
-}
 
 
 @mcp.tool()
@@ -715,8 +704,7 @@ def webpipe_browser(
 
         return json.dumps(result, ensure_ascii=False, indent=2, default=str)
     except Exception as e:
-        tb = traceback.format_exc()
-        return f"{_friendly_error(e)}\n\nDetails:\n{tb}"
+        return _friendly_error(e)
 
 
 def _dispatch_action(session, atype: str, params: dict[str, Any]) -> Any:
@@ -749,7 +737,14 @@ def _dispatch_action(session, atype: str, params: dict[str, Any]) -> Any:
     if atype == "screenshot":
         return session.screenshot(full_page=params.get("full_page", False))
     if atype == "evaluate":
-        return session.evaluate(params["expression"])
+        # Accept both the canonical `expression` and the legacy `script` key
+        expression = params.get("expression") or params.get("script")
+        if not expression:
+            raise ValueError(
+                "evaluate action requires an `expression` parameter "
+                "(a JavaScript string to run in the page)"
+            )
+        return session.evaluate(expression)
     # Unknown type -> fall back to the generic action passthrough
     return session.action(atype, **params)
 
@@ -757,16 +752,24 @@ def _dispatch_action(session, atype: str, params: dict[str, Any]) -> Any:
 def _session_by_id(client: WebpipeClient, session_id: str):
     """Restore a BrowserSession by session_id.
 
-    Follows the SDK pattern strictly: BrowserResource.create() internally does
-    BrowserSession(self._http, SessionInfo.model_validate(data)). Reuse the
-    same constructor here.
+    webpipe-sdk 0.1.2 exposes no public "get session" API, so this mirrors
+    what BrowserResource.create() does internally with the same constructor.
+    Pinned to SDK 0.1.x: if the SDK internals change, fail with a clear
+    message instead of an obscure AttributeError.
     """
     from webpipe.browser import BrowserSession
     from webpipe.types import SessionInfo
 
-    info_dict = client._http.get(f"/api/v1/browser/{session_id}")
-    info = SessionInfo.model_validate(info_dict)
-    return BrowserSession(client._http, info)
+    try:
+        info_dict = client._http.get(f"/api/v1/browser/{session_id}")
+        info = SessionInfo.model_validate(info_dict)
+        return BrowserSession(client._http, info)
+    except AttributeError:
+        raise RuntimeError(
+            "Cannot restore this browser session: the installed webpipe-sdk "
+            "version changed its internal API. Re-create the session with "
+            "webpipe_browser(url=...) instead of passing session_id."
+        )
 
 
 # ---------------------------------------------------------------------------
