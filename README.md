@@ -1,5 +1,12 @@
 # WebPipe MCP Server
 
+> ⚠️ **ARCHIVED BRANCH — DO NOT FOLLOW THE REMOTE SETUP INSTRUCTIONS HERE.**
+> The hosted remote MCP server (`https://mcp.webpipe.ai`) described in this
+> branch **does not exist** (the domain does not resolve). WebPipe currently
+> supports **local stdio deployment only** — use the `main` branch, whose
+> README reflects that. This branch is kept only as a historical snapshot of
+> the pre-review version that still documented the remote track.
+
 A [Model Context Protocol](https://modelcontextprotocol.io) server that exposes the [WebPipe](https://webpipe.ai) web data extraction API as MCP tools, built with [FastMCP](https://github.com/jlowin/fastmcp) and [webpipe-sdk](https://pypi.org/project/webpipe-sdk/).
 
 The WebPipe MCP server provides five tools:
